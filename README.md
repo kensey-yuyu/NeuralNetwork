@@ -2,27 +2,37 @@
 
 ## Abstract
 
-This repository is template of Neural Network.
+This repository is a template of Neural Network.
 
-## Environments
+## Environment
 
-You run ```pyenv virtualenv 3.**.* <env name>``` to create pyenv environment.
-Then you set env to local ```pyenv local <env name>```.
-If you need pip package more, you write package name on ```requirements.txt```.
-You install pip package ```pip install -r requirements.txt```.
+This repository works on PyTorch.
 
 ## How to use
 
-### Run
+### Setup
 
+To setup an environment, run these commands.
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
 ```
-python3 main.py
+
+### Train
+
+Run this command to train a model.
+
+```bash
+python3 train.py
 ```
 
-## Change structure of Neural Network
+### Test (Evaluate)
 
-You change structure of Neural Network, overwrite ```nn.py```.
+Run this command to test (evaluate) the trained model.
+It needs the path of trained model.
 
-## Change hyperparameters etc
-
-You change hyperparameters etc, without structure of Neural Network, overwrite ```main.py```.
+```bash
+python3 test.py TRAINED_MODEL_PATH
+```

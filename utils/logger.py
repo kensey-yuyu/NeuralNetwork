@@ -6,31 +6,26 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import torch
+import torchinfo
 from matplotlib import pyplot as plt
 from pip._internal.operations import freeze
 
+from config import Config
+from nn import NeuralNetwork
+
 
 class Logger:
-    """Logger
-
-    Logger for learning.
-
-    Attributes:
-        log: Log for epoch, accuracy and loss.
-        cfg: Configurations of model.
-        path: Path to save results.
-
+    """
+    Logger.
     """
 
-    def __init__(self, cfg, summary) -> None:
-        """__init__
-
-        Initialize Logger.
+    def __init__(self, cfg: Config, model: NeuralNetwork) -> None:
+        """
+        Initialize logger.
 
         Args:
-            cfg: Configurations of model.
-            summary: Summary of model.
-
+            cfg (Config): Configuration (Hyperparameters) for training model.
+            model (NeuralNetwork): Neural network module.
         """
 
         self.log = {
@@ -41,14 +36,23 @@ class Logger:
             "test_loss": [],
         }
         self.cfg = cfg
+        self.model = model
 
-        # Result path.
+        # Path to save results.
         self.path = "./results/" + format(datetime.now(), "%Y-%m-%d_%H:%M:%S")
 
-        # Check results directory.
+        # Make results directory.
         os.makedirs(f"{self.path}/codes", exist_ok=True)
 
         # Save summary.
+        summary = str(torchinfo.summary(
+            model=self.model,
+            input_size=self.cfg.input_size,
+            col_names=["input_size", "output_size",
+                       "num_params", "kernel_size", "mult_adds"],
+            verbose=0,
+            row_settings=["var_names", "depth"]))
+        print(summary, "\n")
         with open(f"{self.path}/summary.txt", mode="w", encoding="UTF-8") as file:
             file.write(summary)
 
@@ -57,11 +61,12 @@ class Logger:
             "Seed": self.cfg.seed,
             "Epoch": self.cfg.epoch,
             "Batch size": self.cfg.batch_size,
-            "Learning rate": self.cfg.learning_rate,
-            "Scheduler": vars(self.cfg.scheduler) if self.cfg.scheduler is not None else None,
             "Transform": self.cfg.transform,
+            "Loss function": self.cfg.criterion,
+            "Learning rate": self.cfg.learning_rate,
+            "Weight decay": self.cfg.weight_decay,
             "Optimizer": self.cfg.optimizer,
-            "Loss function": self.cfg.criterion
+            "Scheduler": vars(self.cfg.scheduler) if self.cfg.scheduler is not None else None,
         }
         with open(f"{self.path}/hyperparameters.txt", mode="w", encoding="UTF-8") as file:
             for key, value in hyperparameters.items():
@@ -83,19 +88,16 @@ class Logger:
             file.writelines("\n".join(packages))
         return
 
-    def record(self, model, epoch, train_accuracy, train_loss, test_accuracy, test_loss) -> None:
-        """record
-
-        Record learning history.
+    def record(self, epoch: int, train_accuracy: float, train_loss: float, test_accuracy: float, test_loss: float) -> None:
+        """
+        Record the log of training and evaluation.
 
         Args:
-            model: Model of Neural Network.
-            epoch: Current epoch.
-            train_accuracy: Train accuracy on current epoch.
-            train_loss: Train loss on current epoch.
-            test_accuracy: Test accuracy on current epoch.
-            test_loss: Test loss on current epoch.
-
+            epoch (int): Current epoch number.
+            train_accuracy (float): Train accuracy on current epoch.
+            train_loss (float): Train loss on current epoch.
+            test_accuracy (float): Test accuracy on current epoch.
+            test_loss (float): Test loss on current epoch.
         """
 
         self.log["epoch"].append(epoch + 1)
@@ -136,5 +138,5 @@ class Logger:
         plt.close()
 
         # Save model.
-        torch.save(model.state_dict(), f"{self.path}/model.pth.tar")
+        torch.save(self.model.state_dict(), f"{self.path}/model.pth.tar")
         return
