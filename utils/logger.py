@@ -114,6 +114,7 @@ class Logger:
         df = pd.DataFrame([self.log["epoch"], self.log["train_accuracy"], self.log["train_loss"], self.log["test_accuracy"],
                            self.log["test_loss"]], index=["Epoch", "Train accuracy", "Train loss", "Test accuracy", "Test loss"]).T
         df.to_csv(f"{self.path}/history.csv", index=False)
+        df.to_excel(f"{self.path}/history.xlsx", index=False)
 
         # Save graph of accuracy.
         plt.figure()

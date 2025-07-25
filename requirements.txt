@@ -4,3 +4,4 @@ torchinfo
 matplotlib
 tqdm
 pandas
+openpyxl
