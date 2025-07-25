@@ -34,6 +34,10 @@ class Logger:
             "test_accuracy": [],
             "train_loss": [],
             "test_loss": [],
+            "best": {
+                "epoch": 0,
+                "test_accuracy": 0.0
+            }
         }
         self.cfg = cfg
         self.model = model
@@ -138,5 +142,15 @@ class Logger:
         plt.close()
 
         # Save model.
-        torch.save(self.model.state_dict(), f"{self.path}/model.pth.tar")
+        torch.save({"epoch": epoch + 1,
+                    "test_accuracy": test_accuracy,
+                    "model_state_dict": self.model.state_dict()}, f"{self.path}/model.pth.tar")
+
+        # Save best model.
+        if self.log["best"]["test_accuracy"] < test_accuracy:
+            self.log["best"]["test_accuracy"] = test_accuracy
+            self.log["best"]["epoch"] = epoch + 1
+            torch.save({"epoch": epoch + 1,
+                        "test_accuracy": test_accuracy,
+                        "model_state_dict": self.model.state_dict()}, f"{self.path}/best_model.pth.tar")
         return
