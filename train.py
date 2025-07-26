@@ -32,6 +32,8 @@ def main() -> None:
                       test_accuracy, test_loss)
         tqdm.write(
             f"Epoch: {epoch:{len(str(cfg.epoch))}}, Train accuracy: {train_accuracy:.3f}, Train loss: {train_loss:.3f}, Test accuracy: {test_accuracy:.3f}, Test loss: {test_loss:.3f}")
+    else:
+        logger.finish()
     return
 
 

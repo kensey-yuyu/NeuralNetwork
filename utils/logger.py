@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 from datetime import datetime
 
@@ -12,6 +11,8 @@ from pip._internal.operations import freeze
 
 from config import Config
 from nn import NeuralNetwork
+
+from .file_utils import copy_py_files, remove_write
 
 
 class Logger:
@@ -46,7 +47,7 @@ class Logger:
         self.path = "./results/" + format(datetime.now(), "%Y-%m-%d_%H:%M:%S")
 
         # Make results directory.
-        os.makedirs(f"{self.path}/codes", exist_ok=True)
+        os.makedirs(self.path, exist_ok=True)
 
         # Save summary.
         summary = str(torchinfo.summary(
@@ -77,10 +78,7 @@ class Logger:
                 file.write(f"{key}: {value}\n")
 
         # Save Python files.
-        files = [file for file in os.listdir(
-            "./") if file.endswith(".py") == True]
-        for file in files:
-            shutil.copyfile(file, f"{self.path}/codes/{file}")
+        copy_py_files(["./", "./utils/"], f"{self.path}/codes/")
 
         # Save Python version.
         with open(f"{self.path}/python-version.lock", mode="w", encoding="UTF-8") as file:
@@ -154,4 +152,16 @@ class Logger:
             torch.save({"epoch": epoch + 1,
                         "test_accuracy": test_accuracy,
                         "model_state_dict": self.model.state_dict()}, f"{self.path}/best_model.pth.tar")
+        return
+
+    def finish(self) -> None:
+        """
+        Process after training.
+        """
+
+        # Remove write permission from all result files.
+        for dir_path, _, file_names in os.walk(f"{self.path}"):
+            for file_name in file_names:
+                file_path = os.path.join(dir_path, file_name)
+                remove_write(file_path)
         return
